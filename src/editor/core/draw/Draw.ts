@@ -2592,6 +2592,8 @@ export class Draw {
     this.cursor.drawCursor({
       isShow: isShowCursor
     })
+    // 触发光标事件，以便修改外部目录的active状态
+    this.runHook('cursorChange', curIndex)
     return curIndex
   }
 

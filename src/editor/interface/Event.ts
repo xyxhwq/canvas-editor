@@ -20,5 +20,6 @@ export type IHookName = 'intersectionPageNoChange'
   | 'pageModeChange'
   | 'zoneChange'
   | 'visiblePageNoListChange'
+  | 'cursorChange'
 
 export type IRunHook = (hookName: IHookName, ...args: any[]) => void

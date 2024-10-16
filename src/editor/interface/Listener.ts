@@ -65,3 +65,5 @@ export interface IPositionContextChangePayload {
 export type IPositionContextChange = (
   payload: IPositionContextChangePayload
 ) => void
+
+export type ICursorChange = (payload: number) => void

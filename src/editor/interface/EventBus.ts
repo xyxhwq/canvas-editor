@@ -1,6 +1,7 @@
 import {
   IContentChange,
   IControlChange,
+  ICursorChange,
   IIntersectionPageNoChange,
   IMouseEventChange,
   IPageModeChange,
@@ -28,4 +29,5 @@ export interface EventBusMap {
   mouseleave: IMouseEventChange
   mouseenter: IMouseEventChange
   positionContextChange: IPositionContextChange
+  cursorChange: ICursorChange
 }
