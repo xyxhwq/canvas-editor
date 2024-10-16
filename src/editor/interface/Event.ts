@@ -10,3 +10,15 @@ export interface IPositionContextByEvent {
   element: IElement | null
   rangeRect: RangeRect | null
 }
+
+export type IHookName = 'intersectionPageNoChange'
+  | 'pageSizeChange'
+  | 'pageScaleChange'
+  | 'saved'
+  | 'contentChange'
+  | 'controlChange'
+  | 'pageModeChange'
+  | 'zoneChange'
+  | 'visiblePageNoListChange'
+
+export type IRunHook = (hookName: IHookName, ...args: any[]) => void

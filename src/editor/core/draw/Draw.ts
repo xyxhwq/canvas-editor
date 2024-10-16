@@ -30,7 +30,6 @@ import { Cursor } from '../cursor/Cursor'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { GlobalEvent } from '../event/GlobalEvent'
 import { HistoryManager } from '../history/HistoryManager'
-import { Listener } from '../listener/Listener'
 import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { Background } from './frame/Background'
@@ -95,8 +94,6 @@ import {
 } from '../../dataset/constant/Element'
 import { ListParticle } from './particle/ListParticle'
 import { Placeholder } from './frame/Placeholder'
-import { EventBus } from '../event/eventbus/EventBus'
-import { EventBusMap } from '../../interface/EventBus'
 import { Group } from './interactive/Group'
 import { Override } from '../override/Override'
 import { ImageDisplay } from '../../dataset/enum/Common'
@@ -108,6 +105,7 @@ import { PageBorder } from './frame/PageBorder'
 import { ITd } from '../../interface/table/Td'
 import { Actuator } from '../actuator/Actuator'
 import { TableOperate } from './particle/table/TableOperate'
+import { IRunHook } from '../../interface/Event'
 
 export class Draw {
   private container: HTMLDivElement
@@ -121,8 +119,6 @@ export class Draw {
   private position: Position
   private zone: Zone
   private elementList: IElement[]
-  private listener: Listener
-  private eventBus: EventBus<EventBusMap>
   private override: Override
 
   private i18n: I18n
@@ -179,13 +175,13 @@ export class Draw {
   private intersectionPageNo: number
   private lazyRenderIntersectionObserver: IntersectionObserver | null
   private printModeData: Required<IEditorData> | null
+  private runHook: IRunHook
 
   constructor(
     rootContainer: HTMLElement,
     options: DeepRequired<IEditorOption>,
     data: IEditorData,
-    listener: Listener,
-    eventBus: EventBus<EventBusMap>,
+    runHook: IRunHook,
     override: Override
   ) {
     this.container = this._wrapContainer(rootContainer)
@@ -196,8 +192,7 @@ export class Draw {
     this.mode = options.mode
     this.options = options
     this.elementList = data.main
-    this.listener = listener
-    this.eventBus = eventBus
+    this.runHook = runHook
     this.override = override
 
     this._formatContainer()
@@ -479,12 +474,7 @@ export class Draw {
 
   public setVisiblePageNoList(payload: number[]) {
     this.visiblePageNoList = payload
-    if (this.listener.visiblePageNoListChange) {
-      this.listener.visiblePageNoListChange(this.visiblePageNoList)
-    }
-    if (this.eventBus.isSubscribe('visiblePageNoListChange')) {
-      this.eventBus.emit('visiblePageNoListChange', this.visiblePageNoList)
-    }
+    this.runHook('visiblePageNoListChange', this.visiblePageNoList)
   }
 
   public getIntersectionPageNo(): number {
@@ -493,12 +483,7 @@ export class Draw {
 
   public setIntersectionPageNo(payload: number) {
     this.intersectionPageNo = payload
-    if (this.listener.intersectionPageNoChange) {
-      this.listener.intersectionPageNoChange(this.intersectionPageNo)
-    }
-    if (this.eventBus.isSubscribe('intersectionPageNoChange')) {
-      this.eventBus.emit('intersectionPageNoChange', this.intersectionPageNo)
-    }
+    this.runHook('visiblePageNoListChange', this.intersectionPageNo)
   }
 
   public getPageNo(): number {
@@ -784,14 +769,6 @@ export class Draw {
     return this.globalEvent
   }
 
-  public getListener(): Listener {
-    return this.listener
-  }
-
-  public getEventBus(): EventBus<EventBusMap> {
-    return this.eventBus
-  }
-
   public getOverride(): Override {
     return this.override
   }
@@ -966,12 +943,7 @@ export class Draw {
     }
     // 回调
     setTimeout(() => {
-      if (this.listener.pageModeChange) {
-        this.listener.pageModeChange(payload)
-      }
-      if (this.eventBus.isSubscribe('pageModeChange')) {
-        this.eventBus.emit('pageModeChange', payload)
-      }
+      this.runHook('pageModeChange', payload)
     })
   }
 
@@ -995,12 +967,7 @@ export class Draw {
       isSetCursor: !!cursorPosition,
       curIndex: cursorPosition?.index
     })
-    if (this.listener.pageScaleChange) {
-      this.listener.pageScaleChange(payload)
-    }
-    if (this.eventBus.isSubscribe('pageScaleChange')) {
-      this.eventBus.emit('pageScaleChange', payload)
-    }
+    this.runHook('pageScaleChange', payload)
   }
 
   public getPagePixelRatio(): number {
@@ -2580,21 +2547,11 @@ export class Draw {
       }
       // 页数改变
       if (oldPageSize !== this.pageRowList.length) {
-        if (this.listener.pageSizeChange) {
-          this.listener.pageSizeChange(this.pageRowList.length)
-        }
-        if (this.eventBus.isSubscribe('pageSizeChange')) {
-          this.eventBus.emit('pageSizeChange', this.pageRowList.length)
-        }
+        this.runHook('pageSizeChange', this.pageRowList.length)
       }
       // 文档内容改变
       if ((isSubmitHistory || isSourceHistory) && !isInit) {
-        if (this.listener.contentChange) {
-          this.listener.contentChange()
-        }
-        if (this.eventBus.isSubscribe('contentChange')) {
-          this.eventBus.emit('contentChange')
-        }
+        this.runHook('contentChange')
       }
     })
   }

@@ -59,6 +59,7 @@ import { BackgroundRepeat, BackgroundSize } from './dataset/enum/Background'
 import { TextDecorationStyle } from './dataset/enum/Text'
 import { mergeOption } from './utils/option'
 import { LineNumberType } from './dataset/enum/LineNumber'
+import { IHookName } from './interface/Event'
 
 export default class Editor {
   public command: Command
@@ -103,6 +104,15 @@ export default class Editor {
     this.listener = new Listener()
     // 事件
     this.eventBus = new EventBus<EventBusMap>()
+    // 封装事件，同时执行listener和eventBus内容
+    const runHook = (hookName: IHookName, ...args: any[]) => {
+      if (this.listener[hookName]) {
+        this.listener[hookName](...args)
+      }
+      if (this.eventBus.isSubscribe(hookName)) {
+        this.eventBus.emit(hookName, ...args)
+      }
+    }
     // 重写
     this.override = new Override()
     // 启动
@@ -114,8 +124,7 @@ export default class Editor {
         main: mainElementList,
         footer: footerElementList
       },
-      this.listener,
-      this.eventBus,
+      runHook,
       this.override
     )
     // 命令
